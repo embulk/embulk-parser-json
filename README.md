@@ -1,41 +1,49 @@
-# embulk-standards: Embulk's standard plugins
+# embulk-guess-json
 
-These are Embulk's "standard" plugins which are embedded in Embulk's executable binary distributions.
+This is one of Embulk's "standard" plugins that are embedded in Embulk's executable binary distributions.
 
-Their source code had been managed in the same [main repository of Embulk](https://github.com/embulk/embulk) until [`v0.10.33`](https://github.com/embulk/embulk/tree/v0.10.33). They have been split from the main repository since `v0.10.34`.
+The source code had been managed in the same [main repository of Embulk](https://github.com/embulk/embulk) until [`v0.10.33`](https://github.com/embulk/embulk/tree/v0.10.33), and in the [`embulk-standards` repository](https://github.com/embulk/embulk-standards) until [`v0.10.42`](https://github.com/embulk/embulk-standards/tree/v0.10.42).
+
+It has been maintained in the standalone repository since `v0.11.0`.
+
+For Maintainers
+----------------
 
 ### Release
 
-#### Prerequisite: Sonatype OSSRH
-
-You need an account in [Sonatype OSSRH](https://central.sonatype.org/pages/ossrh-guide.html), and configure it in your `~/.gradle/gradle.properties`.
-
-```
-ossrhUsername=(your Sonatype OSSRH username)
-ossrhPassword=(your Sonatype OSSRH password)
-```
-
-#### Prerequisite: PGP signatures
-
-You need your [PGP signatures to release artifacts into Maven Central](https://central.sonatype.org/pages/working-with-pgp-signatures.html), and [configure Gradle to use your key to sign](https://docs.gradle.org/current/userguide/signing_plugin.html).
-
-```
-signing.keyId=(the last 8 symbols of your keyId)
-signing.password=(the passphrase used to protect your private key)
-signing.secretKeyRingFile=(the absolute path to the secret key ring file containing your private key)
-```
-
-#### Release
-
-Modify `version` in `build.gradle` at a detached commit to bump up the versions of Embulk standard plugins.
+Modify `version` in `build.gradle` at a detached commit, and then tag the commit with an annotation.
 
 ```
 git checkout --detach master
-(Remove "-SNAPSHOT" in "version" in build.gradle.)
+
+(Edit: Remove "-SNAPSHOT" in "version" in build.gradle.)
+
 git add build.gradle
+
 git commit -m "Release vX.Y.Z"
+
 git tag -a vX.Y.Z
-(Write the release note for vX.Y.Z in the tag annotation.)
-./gradlew clean && ./gradlew release
+
+(Edit: Write a tag annotation in the changelog format.)
+```
+
+See [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) for the changelog format. We adopt a part of it for Git's tag annotation like below.
+
+```
+## [X.Y.Z] - YYYY-MM-DD
+
+### Added
+- Added a feature.
+
+### Changed
+- Changed something.
+
+### Fixed
+- Fixed a bug.
+```
+
+Push the annotated tag, then. It triggers a release operation on GitHub Actions after approval.
+
+```
 git push -u origin vX.Y.Z
 ```

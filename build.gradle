@@ -1,7 +1,9 @@
 plugins {
     id "java"
     id "maven-publish"
-    id "org.embulk.embulk-plugins" version "0.5.5" apply false
+    id "signing"
+    id "org.embulk.embulk-plugins" version "0.5.5"
+    id "checkstyle"
 }
 
 repositories {
@@ -9,40 +11,153 @@ repositories {
 }
 
 group = "org.embulk"
-version = "0.10.42-SNAPSHOT"
+version = "0.11.0-SNAPSHOT"
+description = "Guesses if an input is in JSON."
 
-task releaseCheck {
-    doFirst {
-        if (rootProject.version.endsWith("-SNAPSHOT")) {
-            throw new GradleException("Not for release. The version in build.gradle is SNAPSHOT: ${rootProject.version}")
-        }
+configurations {
+    compileClasspath.resolutionStrategy.activateDependencyLocking()
+    runtimeClasspath.resolutionStrategy.activateDependencyLocking()
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    options.encoding = "UTF-8"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
     }
-    doLast {
-        println "Ready. Run 'release' task."
+
+    withJavadocJar()
+    withSourcesJar()
+}
+
+dependencies {
+    compileOnly "org.embulk:embulk-spi:0.11"
+    compileOnly "org.msgpack:msgpack-core:0.8.24"
+
+    implementation "org.embulk:embulk-util-config:0.3.3"
+    implementation "org.embulk:embulk-util-file:0.1.4"
+    implementation "org.embulk:embulk-util-json:0.2.1"
+}
+
+embulkPlugin {
+    mainClass = "org.embulk.guess.json.JsonGuessPlugin"
+    category = "guess"
+    type = "json"
+}
+
+jar {
+    metaInf {
+        from rootProject.file("LICENSE")
     }
 }
 
-task release {
-    dependsOn "releaseCheck"
+sourcesJar {
+    metaInf {
+        from rootProject.file("LICENSE")
+    }
 }
 
-subprojects {
-    tasks.withType(Test) {
-        testLogging {
-            events "passed", "skipped", "failed", "standardOut", "standardError"
+javadocJar {
+    metaInf {
+        from rootProject.file("LICENSE")
+    }
+}
 
-            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-            showCauses = true
-            showExceptions = true
-            showStackTraces = true
-            showStandardStreams = true
+publishing {
+    publications {
+         maven(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
 
-            outputs.upToDateWhen { false }
+            from components.java
+             // javadocJar and sourcesJar are added by java.withJavadocJar() and java.withSourcesJar() above.
+             // See: https://docs.gradle.org/current/javadoc/org/gradle/api/plugins/JavaPluginExtension.html
+
+            pom {  // https://central.sonatype.org/pages/requirements.html
+                packaging "jar"
+
+                name = project.name
+                description = project.description
+                url = "https://www.embulk.org/"
+
+                licenses {
+                    license {
+                        // http://central.sonatype.org/pages/requirements.html#license-information
+                        name = "The Apache License, Version 2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution = "repo"
+                    }
+                }
+
+                developers {
+                    developer {
+                        name = "Dai MIKURUBE"
+                        email = "dmikurube@acm.org"
+                    }
+                }
+
+                scm {
+                    connection = "scm:git:git://github.com/embulk/embulk-guess-json.git"
+                    developerConnection = "scm:git:git@github.com:embulk/embulk-guess-json.git"
+                    url = "https://github.com/embulk/embulk-guess-json"
+                }
+            }
         }
     }
 
-    afterEvaluate { project ->
-        rootProject.check.dependsOn project.check
-        rootProject.release.dependsOn project.publishMavenPublicationToMavenCentralRepository
+    repositories {
+        maven {  // publishMavenPublicationToMavenCentralRepository
+            name = "mavenCentral"
+            if (project.version.endsWith("-SNAPSHOT")) {
+                url "https://oss.sonatype.org/content/repositories/snapshots"
+            } else {
+                url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            }
+
+            credentials {
+                username = project.hasProperty("ossrhUsername") ? ossrhUsername : ""
+                password = project.hasProperty("ossrhPassword") ? ossrhPassword : ""
+            }
+        }
     }
+}
+
+signing {
+    if (project.hasProperty("signingKey") && project.hasProperty("signingPassword")) {
+        logger.lifecycle("Signing with an in-memory key.")
+        useInMemoryPgpKeys(signingKey, signingPassword)
+    }
+    sign publishing.publications.maven
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showCauses = true
+        showExceptions = true
+        showStackTraces = true
+        showStandardStreams = true
+        outputs.upToDateWhen { false }
+    }
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        // Not to skip up-to-date checkstyles.
+        outputs.upToDateWhen { false }
+    }
+}
+
+checkstyle {
+    toolVersion "8.7"
+    configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
+    configProperties = [
+        "checkstyle.config.path": file("${projectDir}/config/checkstyle")
+    ]
+    ignoreFailures = false
+    maxWarnings = 0  // https://github.com/gradle/gradle/issues/881
 }
