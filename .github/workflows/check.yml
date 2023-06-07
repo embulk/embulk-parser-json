@@ -11,14 +11,14 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        # - macOS-latest  # https://github.com/embulk/embulk-standards/issues/16
+        - macOS-latest
         - windows-latest
     steps:
     - name: Set Git's core.autocrlf to false for Windows before checkout
       run: git config --global core.autocrlf false
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up OpenJDK 8
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         java-version: 8
         distribution: "temurin"
@@ -37,5 +37,5 @@ jobs:
     - name: Override TEMP to use Windows' long filename (LFN)
       run: echo "TEMP=$env:USERPROFILE\AppData\Local\Temp" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       if: matrix.os == 'windows-latest'
-    - name: Check all plugins
+    - name: Check
       run: ./gradlew --stacktrace check
