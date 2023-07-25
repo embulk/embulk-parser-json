@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +33,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.embulk.config.ConfigSource;
 import org.embulk.config.TaskSource;
-import org.embulk.spi.BufferAllocator;
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
 import org.embulk.spi.DataException;
@@ -64,7 +62,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JsonParserPlugin implements ParserPlugin {
-
     public JsonParserPlugin() {
         this.jsonParser = new JsonParser();
     }
@@ -171,7 +168,7 @@ public class JsonParserPlugin implements ParserPlugin {
             jsonPointers.putAll(createJsonPointerMap(schema, schemaConfig));
         }
 
-        try (final PageBuilder pageBuilder = getPageBuilder(Exec.getBufferAllocator(), schema, output);
+        try (final PageBuilder pageBuilder = Exec.getPageBuilder(Exec.getBufferAllocator(), schema, output);
                 FileInputInputStream in = new FileInputInputStream(input)) {
             while (in.nextFile()) {
                 final String fileName = input.hintOfCurrentInputFileNameForLogging().orElse("-");
@@ -330,8 +327,7 @@ public class JsonParserPlugin implements ParserPlugin {
 
                 @Override
                 public void timestampColumn(Column column) {
-                    final Instant timestampInstant = timestampFormatters.get(column).parse(columnValue.toString());
-                    setParsedTimestamp(pageBuilder, column, timestampInstant);
+                    pageBuilder.setTimestamp(column, timestampFormatters.get(column).parse(columnValue.toString()));
                 }
 
                 @Override
@@ -339,19 +335,6 @@ public class JsonParserPlugin implements ParserPlugin {
                     pageBuilder.setJson(column, columnValue);
                 }
             });
-        }
-    }
-
-    @SuppressWarnings("deprecation")  // For the use of new PageBuilder().
-    private static PageBuilder getPageBuilder(final BufferAllocator allocator, final Schema schema, final PageOutput output) {
-        try {
-            return Exec.getPageBuilder(allocator, schema, output);
-        } catch (final NoSuchMethodError ex) {
-            // Exec.getPageBuilder() is available from v0.10.17, and "new PageBuidler()" is deprecated then.
-            // It is not expected to happen because this plugin is embedded with Embulk v0.10.24+, but falling back just in case.
-            // TODO: Remove this fallback in v0.11.
-            logger.warn("embulk-parser-json is expected to work with Embulk v0.10.17+.", ex);
-            return new PageBuilder(allocator, schema, output);
         }
     }
 
@@ -484,19 +467,6 @@ public class JsonParserPlugin implements ParserPlugin {
             i++;
         }
         return Collections.unmodifiableMap(formatters);
-    }
-
-    @SuppressWarnings("deprecation")  // For the use of new PageBuilder with java.time.Instant.
-    private static void setParsedTimestamp(final PageBuilder pageBuilder, final Column column, final Instant instant) {
-        try {
-            pageBuilder.setTimestamp(column, instant);
-        } catch (final NoSuchMethodError ex) {
-            // PageBuilder with Instant are available from v0.10.13, and org.embulk.spi.Timestamp is deprecated.
-            // It is not expected to happen because this plugin is embedded with Embulk v0.10.24+, but falling back just in case.
-            // TODO: Remove this fallback in v0.11.
-            logger.warn("embulk-parser-json is expected to work with Embulk v0.10.17+.", ex);
-            pageBuilder.setTimestamp(column, org.embulk.spi.time.Timestamp.ofInstant(instant));
-        }
     }
 
     static class JsonRecordValidateException extends DataException {
