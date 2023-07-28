@@ -1,1 +1,2 @@
 rootProject.name = "embulk-parser-json"
+include "embulk-guess-json"

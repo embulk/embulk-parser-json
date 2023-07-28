@@ -1,4 +1,4 @@
-# embulk-parser-json
+# embulk-parser-json / embulk-guess-json
 
 This is one of Embulk's "standard" plugins that are embedded in Embulk's executable binary distributions.
 
