@@ -10,8 +10,8 @@ repositories {
     mavenCentral()
 }
 
-group = "org.embulk"
-version = "0.11.0-SNAPSHOT"
+group = rootProject.group
+version = rootProject.version
 description = "Guesses if an input is in JSON."
 
 configurations {
@@ -100,9 +100,9 @@ publishing {
                 }
 
                 scm {
-                    connection = "scm:git:git://github.com/embulk/embulk-guess-json.git"
-                    developerConnection = "scm:git:git@github.com:embulk/embulk-guess-json.git"
-                    url = "https://github.com/embulk/embulk-guess-json"
+                    connection = "scm:git:git://github.com/embulk/embulk-parser-json.git"
+                    developerConnection = "scm:git:git@github.com:embulk/embulk-parser-json.git"
+                    url = "https://github.com/embulk/embulk-parser-json"
                 }
             }
         }
