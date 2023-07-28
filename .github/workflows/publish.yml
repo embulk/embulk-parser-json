@@ -19,7 +19,7 @@ jobs:
         distribution: "temurin"
         cache: "gradle"
     - name: Publish
-      run: ./gradlew --stacktrace publishMavenPublicationToMavenCentralRepository
+      run: ./gradlew --stacktrace :publishMavenPublicationToMavenCentralRepository embulk-guess-json:publishMavenPublicationToMavenCentralRepository
       env:
         ORG_GRADLE_PROJECT_ossrhUsername: ${{ vars.OSSRH_USERNAME }}
         ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
