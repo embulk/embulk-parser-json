@@ -19,6 +19,14 @@ configurations {
     runtimeClasspath.resolutionStrategy.activateDependencyLocking()
 }
 
+sourceSets {
+    main {
+        java {
+            srcDir "../embulk-util-json/src/main/"
+        }
+    }
+}
+
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
     options.encoding = "UTF-8"
@@ -43,7 +51,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:2.6.7.5"
     implementation "org.embulk:embulk-util-config:0.3.4"
     implementation "org.embulk:embulk-util-file:0.1.5"
-    implementation "org.embulk:embulk-util-json:0.2.2"
+    // implementation "org.embulk:embulk-util-json:0.2.2"
     implementation "org.embulk:embulk-util-timestamp:0.2.2"
 
     testImplementation "junit:junit:4.13.2"
