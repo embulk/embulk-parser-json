@@ -185,6 +185,14 @@ public class JsonParserPlugin implements ParserPlugin {
                                         throw new JsonRecordValidateException("A Json record doesn't have given 'JSON pointer to root'.");
                                     }
                                 } catch (JsonParseException e) {
+                                    /*
+                                     * When JsonParseException is thrown, it would be an error that
+                                     * the given JSON pointer doesn't match with the JSON object.
+                                     * We would return NULL when the pointer doesn't match, not throw Exception.
+                                     *
+                                     * NOTE: We may change the behavior.
+                                     * See: https://github.com/embulk/embulk/pull/1103#discussion_r255807991
+                                     */
                                     throw new JsonRecordValidateException("A Json record doesn't have given 'JSON pointer to root'.");
                                 }
                             }
@@ -284,6 +292,14 @@ public class JsonParserPlugin implements ParserPlugin {
                             .build(valueAsJsonString)
                             .readJsonValue();
                 } catch (final IOException ex) {
+                    /*
+                     * When JsonParseException is thrown, it would be an error that
+                     * the given JSON pointer doesn't match with the JSON object.
+                     * We would return NULL when the pointer doesn't match, not throw Exception.
+                     *
+                     * NOTE: We may change the behavior.
+                     * See: https://github.com/embulk/embulk/pull/1103#discussion_r255807991
+                     */
                     throw new JsonParseException("Failed to parse JSON: " + valueAsJsonString, ex);
                 }
             } else {
