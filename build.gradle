@@ -36,7 +36,6 @@ java {
 dependencies {
     compileOnly "org.embulk:embulk-spi:0.11"
     compileOnly "org.slf4j:slf4j-api:2.0.7"
-    compileOnly "org.msgpack:msgpack-core:0.8.24"
 
     implementation "com.fasterxml.jackson.core:jackson-annotations:2.6.7"
     implementation "com.fasterxml.jackson.core:jackson-core:2.6.7"
@@ -51,7 +50,6 @@ dependencies {
     testImplementation "org.embulk:embulk-core:0.11.0"
     testImplementation "org.embulk:embulk-deps:0.11.0"
     testImplementation "org.embulk:embulk-junit4:0.11.0"
-    testImplementation "com.google.guava:guava:18.0"
 }
 
 embulkPlugin {

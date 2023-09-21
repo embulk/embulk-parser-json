@@ -24,12 +24,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.google.common.collect.ImmutableList;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.embulk.config.ConfigSource;
 import org.embulk.spi.DataException;
@@ -488,7 +489,7 @@ public class TestJsonParserPlugin {
 
     private InputStreamFileInput.IteratorProvider provider(InputStream... inputStreams) throws IOException {
         return new InputStreamFileInput.IteratorProvider(
-                ImmutableList.copyOf(inputStreams));
+                Collections.unmodifiableList(Arrays.asList(inputStreams)));
     }
 
     private Schema newSchema() {
