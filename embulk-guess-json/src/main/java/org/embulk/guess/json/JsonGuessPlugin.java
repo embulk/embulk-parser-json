@@ -27,12 +27,12 @@ import org.embulk.spi.Buffer;
 import org.embulk.spi.BufferAllocator;
 import org.embulk.spi.Exec;
 import org.embulk.spi.GuessPlugin;
+import org.embulk.spi.json.JsonValue;
 import org.embulk.util.config.ConfigMapperFactory;
 import org.embulk.util.file.FileInputInputStream;
 import org.embulk.util.file.InputStreamFileInput;
 import org.embulk.util.json.JsonParseException;
-import org.embulk.util.json.JsonParser;
-import org.msgpack.value.Value;
+import org.embulk.util.json.JsonValueParser;
 
 public class JsonGuessPlugin implements GuessPlugin {
     @Override
@@ -45,17 +45,17 @@ public class JsonGuessPlugin implements GuessPlugin {
 
         final BufferAllocator bufferAllocator = Exec.getBufferAllocator();
 
-        // Use org.embulk.spi.json.JsonParser to respond to multi-line Json
-        final JsonParser.Stream jsonParser = newJsonParser(sample, bufferAllocator);
+        // Use org.embulk.util.json.JsonValueParser to respond to multi-line JSON
+        final JsonValueParser parser = newJsonParser(sample, bufferAllocator);
 
         boolean oneJsonParsed = false;
         try {
-            Value v = null;
-            while ((v = jsonParser.next()) != null) {
-                // "v" needs to be JSON object type (isMapValue) because:
+            JsonValue v = null;
+            while ((v = parser.readJsonValue()) != null) {
+                // "v" needs to be JSON object type (isJsonValue) because:
                 // 1) Single-column CSV can be mis-guessed as JSON if JSON non-objects are accepted.
                 // 2) JsonParserPlugin accepts only the JSON object type.
-                if (!v.isMapValue()) {
+                if (!v.isJsonObject()) {
                     throw new JsonParseException("v must be JSON object type");
                 }
                 oneJsonParsed = true;
@@ -76,7 +76,7 @@ public class JsonGuessPlugin implements GuessPlugin {
         return configDiff;
     }
 
-    private static JsonParser.Stream newJsonParser(final Buffer buffer, final BufferAllocator bufferAllocator) {
+    private static JsonValueParser newJsonParser(final Buffer buffer, final BufferAllocator bufferAllocator) {
         final ArrayList<InputStream> inputStreams = new ArrayList<>();
         inputStreams.add(buildByteArrayInputStream(buffer));
 
@@ -85,7 +85,7 @@ public class JsonGuessPlugin implements GuessPlugin {
         final FileInputInputStream input = new FileInputInputStream(new InputStreamFileInput(bufferAllocator, iteratorProvider));
         input.nextFile();
         try {
-            return (new JsonParser()).open(input);
+            return JsonValueParser.builder().build(input);
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
