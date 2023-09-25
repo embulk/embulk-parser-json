@@ -23,34 +23,34 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.msgpack.value.ValueFactory.newArray;
-import static org.msgpack.value.ValueFactory.newBoolean;
-import static org.msgpack.value.ValueFactory.newInteger;
-import static org.msgpack.value.ValueFactory.newMap;
-import static org.msgpack.value.ValueFactory.newString;
 
-import com.google.common.collect.ImmutableList;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.embulk.config.ConfigSource;
 import org.embulk.spi.DataException;
 import org.embulk.spi.FileInput;
 import org.embulk.spi.Schema;
+import org.embulk.spi.json.JsonArray;
+import org.embulk.spi.json.JsonBoolean;
+import org.embulk.spi.json.JsonDouble;
+import org.embulk.spi.json.JsonLong;
+import org.embulk.spi.json.JsonObject;
+import org.embulk.spi.json.JsonString;
+import org.embulk.spi.json.JsonValue;
 import org.embulk.test.EmbulkTestRuntime;
 import org.embulk.test.TestPageBuilderReader.MockPageOutput;
 import org.embulk.util.config.ConfigMapperFactory;
 import org.embulk.util.file.InputStreamFileInput;
-import org.embulk.util.json.JsonParser;
 import org.embulk.util.timestamp.TimestampFormatter;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.msgpack.value.Value;
 
 public class TestJsonParserPlugin {
     @Rule
@@ -100,31 +100,30 @@ public class TestJsonParserPlugin {
         assertEquals(3, records.size());
 
         Object[] record;
-        Map<Value, Value> map;
         { // "{\"_c0\":true,\"_c1\":10,\"_c2\":\"embulk\",\"_c3\":{\"k\":\"v\"}}"
             record = records.get(0);
             assertEquals(1, record.length);
-            map = ((Value) record[0]).asMapValue().map();
+            final JsonObject object = ((JsonValue) record[0]).asJsonObject();
 
-            assertEquals(newBoolean(true), map.get(newString("_c0")));
-            assertEquals(newInteger(10L), map.get(newString("_c1")));
-            assertEquals(newString("embulk"), map.get(newString("_c2")));
-            assertEquals(newMap(newString("k"), newString("v")), map.get(newString("_c3")));
+            assertEquals(JsonBoolean.TRUE, object.get("_c0"));
+            assertEquals(JsonLong.of(10L), object.get("_c1"));
+            assertEquals(JsonString.of("embulk"), object.get("_c2"));
+            assertEquals(JsonObject.of("k", JsonString.of("v")), object.get("_c3"));
         }
         { // "{}"
             record = records.get(1);
             assertEquals(1, record.length);
-            assertTrue(((Value) record[0]).asMapValue().map().isEmpty());
+            assertTrue(((JsonValue) record[0]).asJsonObject().isEmpty());
         }
         {
             record = records.get(2);
             assertEquals(1, record.length);
-            map = ((Value) record[0]).asMapValue().map();
+            final JsonObject object = ((JsonValue) record[0]).asJsonObject();
 
-            assertEquals(newBoolean(false), map.get(newString("_c0")));
-            assertEquals(newInteger(-10L), map.get(newString("_c1")));
-            assertEquals(newString("エンバルク"), map.get(newString("_c2")));
-            assertEquals(newArray(newString("e0"), newString("e1")), map.get(newString("_c3")));
+            assertEquals(JsonBoolean.FALSE, object.get("_c0"));
+            assertEquals(JsonLong.of(-10L), object.get("_c1"));
+            assertEquals(JsonString.of("エンバルク"), object.get("_c2"));
+            assertEquals(JsonArray.of(JsonString.of("e0"), JsonString.of("e1")), object.get("_c3"));
         }
     }
 
@@ -210,8 +209,8 @@ public class TestJsonParserPlugin {
         List<Object[]> records = Pages.toObjects(newSchema(), output.pages);
         assertEquals(1, records.size());
         Object[] record = records.get(0);
-        Map<Value, Value> map = ((Value) record[0]).asMapValue().map();
-        assertEquals(newString("b"), map.get(newString("")));
+        final JsonObject object = ((JsonValue) record[0]).asJsonObject();
+        assertEquals(JsonString.of("b"), object.get(""));
     }
 
     @Test
@@ -224,8 +223,8 @@ public class TestJsonParserPlugin {
         List<Object[]> records = Pages.toObjects(newSchema(), output.pages);
         assertEquals(1, records.size());
         Object[] record = records.get(0);
-        Map<Value, Value> map = ((Value) record[0]).asMapValue().map();
-        assertEquals(newString("b"), map.get(newString("a")));
+        final JsonObject object = ((JsonValue) record[0]).asJsonObject();
+        assertEquals(JsonString.of("b"), object.get("a"));
     }
 
     @Test
@@ -331,7 +330,7 @@ public class TestJsonParserPlugin {
         transaction(config, fileInput(
                 "{\"_c0\":{\"b\": 1}, \"_c1\": true}",
                 "{}",            // should be skipped because it doesn't have "_c0" and stop_on_invalid_record is false
-                "{\"_c0\": 1}",  // should be skipped because the "_c0"'s value isn't map value and stop_on_invalid_record is false
+                "{\"_c0\": 1}",  // should be skipped because the "_c0"'s value isn't JSON Object and stop_on_invalid_record is false
                 "{\"_c0\":{\"b\": 2}, \"_c1\": false}"
         ));
 
@@ -339,12 +338,12 @@ public class TestJsonParserPlugin {
         assertEquals(2, records.size());
 
         Object[] record = records.get(0);
-        Map<Value, Value> map = ((Value) record[0]).asMapValue().map();
-        assertEquals(newInteger(1), map.get(newString("b")));
+        final JsonObject object1 = ((JsonValue) record[0]).asJsonObject();
+        assertEquals(JsonLong.of(1), object1.get("b"));
 
         record = records.get(1);
-        map = ((Value) record[0]).asMapValue().map();
-        assertEquals(newInteger(2), map.get(newString("b")));
+        final JsonObject object2 = ((JsonValue) record[0]).asJsonObject();
+        assertEquals(JsonLong.of(2), object2.get("b"));
     }
 
     @Test(expected = DataException.class)
@@ -381,7 +380,7 @@ public class TestJsonParserPlugin {
         assertEquals(1, records.size());
 
         Object[] record = records.get(0);
-        assertArrayEquals(record, new Object[]{1L, 1.234D, "a", true, toInstant("2019-01-02 03:04:56"), toJson("{\"a\": 1}"), null});
+        assertArrayEquals(record, new Object[]{1L, 1.234D, "a", true, toInstant("2019-01-02 03:04:56"), JsonObject.of("a", JsonLong.of(1)), null});
     }
 
     @Test
@@ -397,7 +396,14 @@ public class TestJsonParserPlugin {
         Object[] record = records.get(0);
         assertArrayEquals(
                 record,
-                new Object[]{toJson("{\"_c0\": 1, \"_c1\": 1.234, \"_c2\": \"a\", \"_c3\": true, \"_c4\": \"2019-01-02 03:04:56\", \"_c5\":{\"a\": 1}}")});
+                new Object[]{ JsonObject.of(
+                        "_c0", JsonLong.of(1),
+                        "_c1", JsonDouble.of(1.234),
+                        "_c2", JsonString.of("a"),
+                        "_c3", JsonBoolean.TRUE,
+                        "_c4", JsonString.of("2019-01-02 03:04:56"),
+                        "_c5", JsonObject.of("a", JsonLong.of(1)))
+                });
     }
 
     @Test
@@ -421,7 +427,7 @@ public class TestJsonParserPlugin {
         assertEquals(1, records.size());
 
         Object[] record = records.get(0);
-        assertArrayEquals(record, new Object[]{1L, 1.234D, "foo", true, toInstant("2019-01-02 03:04:56"), toJson("{\"a\": 1}"), null});
+        assertArrayEquals(record, new Object[]{1L, 1.234D, "foo", true, toInstant("2019-01-02 03:04:56"), JsonObject.of("a", JsonLong.of(1)), null});
     }
 
     @Test
@@ -433,8 +439,8 @@ public class TestJsonParserPlugin {
 
         List<Object[]> records = Pages.toObjects(newSchema(), output.pages);
         assertEquals(2, records.size());
-        assertArrayEquals(records.get(0), new Object[]{toJson("{\"_c0\": 1}")});
-        assertArrayEquals(records.get(1), new Object[]{toJson("{\"_c0\": 2}")});
+        assertArrayEquals(records.get(0), new Object[]{ JsonObject.of("_c0", JsonLong.of(1)) });
+        assertArrayEquals(records.get(1), new Object[]{ JsonObject.of("_c0", JsonLong.of(2)) });
     }
 
     @Test(expected = DataException.class)
@@ -459,8 +465,8 @@ public class TestJsonParserPlugin {
 
         List<Object[]> records = Pages.toObjects(newSchema(), output.pages);
         assertEquals(2, records.size());
-        assertArrayEquals(records.get(0), new Object[]{toJson("{\"_c0\": 1}")});
-        assertArrayEquals(records.get(1), new Object[]{toJson("{\"_c0\": 2}")});
+        assertArrayEquals(records.get(0), new Object[]{ JsonObject.of("_c0", JsonLong.of(1)) });
+        assertArrayEquals(records.get(1), new Object[]{ JsonObject.of("_c0", JsonLong.of(2)) });
     }
 
     private ConfigSource config() {
@@ -483,7 +489,7 @@ public class TestJsonParserPlugin {
 
     private InputStreamFileInput.IteratorProvider provider(InputStream... inputStreams) throws IOException {
         return new InputStreamFileInput.IteratorProvider(
-                ImmutableList.copyOf(inputStreams));
+                Collections.unmodifiableList(Arrays.asList(inputStreams)));
     }
 
     private Schema newSchema() {
@@ -494,13 +500,7 @@ public class TestJsonParserPlugin {
         return TIMESTAMP_FORMATTER.parse(dateTimeString);
     }
 
-    private static Value toJson(String json) {
-        return JSON_PARSER.parse(json);
-    }
-
     private static final ConfigMapperFactory CONFIG_MAPPER_FACTORY = ConfigMapperFactory.builder().addDefaultModules().build();
 
     private static TimestampFormatter TIMESTAMP_FORMATTER = TimestampFormatter.builderWithJava("yyyy-MM-dd HH:mm:ss").build();
-
-    private static final JsonParser JSON_PARSER = new JsonParser();
 }

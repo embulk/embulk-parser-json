@@ -117,7 +117,7 @@ class Pages {
             if (record.isNull(column)) {
                 visit(column, null);
             } else {
-                visit(column, record.getJson(column));
+                visit(column, record.getJsonValue(column));
             }
         }
     }
