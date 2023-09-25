@@ -202,7 +202,7 @@ public class JsonParserPlugin implements ParserPlugin {
                                 if (!value.isJsonArray()) {
                                     throw new JsonRecordValidateException(
                                             String.format(
-                                                    "A Json record must represent array value with '__experimental__flatten_json_array' option, but it's %s",
+                                                    "A Json record must represent array value with 'flatten_json_array' option, but it's %s",
                                                     value.getEntityType().name()));
                                 }
                                 recordValues = value.asJsonArray();
