@@ -11,7 +11,7 @@ repositories {
 }
 
 group = "org.embulk"
-version = "0.11.1-SNAPSHOT"
+version = "0.11.2-SNAPSHOT"
 description = "Parses JSON files read by other file input plugins."
 
 configurations {
