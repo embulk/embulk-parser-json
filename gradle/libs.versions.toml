@@ -5,14 +5,16 @@ gradle-embulk-plugins = "0.7.0"
 embulk-spi = "0.11"
 slf4j-api = "2.0.7"
 
-embulk-util-config = "0.3.4"
-validation-api = "1.1.0.Final"
+embulk-util-config = "0.5.0"
+validation-api = "2.0.1.Final"
 
-jackson = "2.6.7"
-jackson-databind = "2.6.7.5"
+# See https://github.com/FasterXML/jackson/wiki/Jackson-Releases for Jackson versions.
+#
+# We choose Jackson with the latest patch release of the latest open branch.
+jackson = "2.16.2"
 
 embulk-util-file = "0.1.5"
-embulk-util-json = "0.3.0"
+embulk-util-json = "0.4.0"
 embulk-util-timestamp = "0.2.2"
 
 junit4 = "4.13.2"
@@ -27,10 +29,11 @@ embulk-util-file = { group = "org.embulk", name = "embulk-util-file", version.re
 embulk-util-json = { group = "org.embulk", name = "embulk-util-json", version.ref = "embulk-util-json" }
 embulk-util-timestamp = { group = "org.embulk", name = "embulk-util-timestamp", version.ref = "embulk-util-timestamp" }
 validation = { group = "javax.validation", name = "validation-api", version.ref = "validation-api" }
-jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
-jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson" }
-jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson-databind" }
-jackson-datatype-jdk8 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jdk8", version.ref = "jackson" }
+jackson-bom = { group = "com.fasterxml.jackson", name = "jackson-bom", version.ref = "jackson" }
+jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations" }
+jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind" }
+jackson-datatype-jdk8 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jdk8" }
 junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
 embulk-core = { group = "org.embulk", name = "embulk-core", version.ref = "embulk-core" }
 embulk-deps = { group = "org.embulk", name = "embulk-deps", version.ref = "embulk-core" }

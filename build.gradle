@@ -39,6 +39,7 @@ dependencies {
 
     implementation libs.embulk.util.config
     implementation libs.validation
+    implementation platform(libs.jackson.bom)
     implementation libs.bundles.jackson
 
     implementation libs.embulk.util.file
