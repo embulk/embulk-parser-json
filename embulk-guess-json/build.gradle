@@ -2,7 +2,7 @@ plugins {
     id "java"
     id "maven-publish"
     id "signing"
-    id "org.embulk.embulk-plugins" version "0.5.5"
+    alias(libs.plugins.gradle.embulk.plugins)
     id "checkstyle"
 }
 
@@ -34,11 +34,15 @@ java {
 }
 
 dependencies {
-    compileOnly "org.embulk:embulk-spi:0.11"
+    compileOnly libs.embulk.spi
+    compileOnly libs.slf4j
 
-    implementation "org.embulk:embulk-util-config:0.3.4"
-    implementation "org.embulk:embulk-util-file:0.1.5"
-    implementation "org.embulk:embulk-util-json:0.3.0"
+    implementation libs.embulk.util.config
+    implementation libs.validation
+    implementation libs.bundles.jackson
+
+    implementation libs.embulk.util.file
+    implementation libs.embulk.util.json
 }
 
 embulkPlugin {
