@@ -8,6 +8,7 @@
   <suppress checks="JavadocMethod" files=".*"/>
   <suppress checks="JavadocParagraph" files=".*"/>
   <suppress checks="JavadocTagContinuationIndentation" files=".*"/>
+  <suppress checks="MissingJavadocType" files=".*"/>
   <suppress checks="SingleLineJavadoc" files=".*"/>
   <suppress checks="SummaryJavadoc" files=".*"/>
 </suppressions>

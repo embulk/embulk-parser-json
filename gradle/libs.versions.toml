@@ -20,6 +20,8 @@ embulk-util-timestamp = "0.2.2"
 junit4 = "4.13.2"
 embulk-core = "0.11.0"
 
+checkstyle = "9.3"
+
 [libraries]
 
 embulk-spi = { group = "org.embulk", name = "embulk-spi", version.ref = "embulk-spi" }
