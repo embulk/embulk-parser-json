@@ -1,0 +1,50 @@
+[versions]
+
+gradle-embulk-plugins = "0.7.0"
+
+embulk-spi = "0.11"
+slf4j-api = "2.0.7"
+
+embulk-util-config = "0.3.4"
+validation-api = "1.1.0.Final"
+
+jackson = "2.6.7"
+jackson-databind = "2.6.7.5"
+
+embulk-util-file = "0.1.5"
+embulk-util-json = "0.3.0"
+embulk-util-timestamp = "0.2.2"
+
+junit4 = "4.13.2"
+embulk-core = "0.11.0"
+
+[libraries]
+
+embulk-spi = { group = "org.embulk", name = "embulk-spi", version.ref = "embulk-spi" }
+slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j-api" }
+embulk-util-config = { group = "org.embulk", name = "embulk-util-config", version.ref = "embulk-util-config" }
+embulk-util-file = { group = "org.embulk", name = "embulk-util-file", version.ref = "embulk-util-file" }
+embulk-util-json = { group = "org.embulk", name = "embulk-util-json", version.ref = "embulk-util-json" }
+embulk-util-timestamp = { group = "org.embulk", name = "embulk-util-timestamp", version.ref = "embulk-util-timestamp" }
+validation = { group = "javax.validation", name = "validation-api", version.ref = "validation-api" }
+jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
+jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson-databind" }
+jackson-datatype-jdk8 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jdk8", version.ref = "jackson" }
+junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
+embulk-core = { group = "org.embulk", name = "embulk-core", version.ref = "embulk-core" }
+embulk-deps = { group = "org.embulk", name = "embulk-deps", version.ref = "embulk-core" }
+embulk-junit4 = { group = "org.embulk", name = "embulk-junit4", version.ref = "embulk-core" }
+
+[bundles]
+
+jackson = [
+  "jackson-annotations",
+  "jackson-core",
+  "jackson-databind",
+  "jackson-datatype-jdk8",
+]
+
+[plugins]
+
+gradle-embulk-plugins = { id = "org.embulk.embulk-plugins", version.ref = "gradle-embulk-plugins" }

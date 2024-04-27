@@ -2,7 +2,7 @@ plugins {
     id "java"
     id "maven-publish"
     id "signing"
-    id "org.embulk.embulk-plugins" version "0.5.5"
+    alias(libs.plugins.gradle.embulk.plugins)
     id "checkstyle"
 }
 
@@ -34,22 +34,22 @@ java {
 }
 
 dependencies {
-    compileOnly "org.embulk:embulk-spi:0.11"
-    compileOnly "org.slf4j:slf4j-api:2.0.7"
+    compileOnly libs.embulk.spi
+    compileOnly libs.slf4j
 
-    implementation "com.fasterxml.jackson.core:jackson-annotations:2.6.7"
-    implementation "com.fasterxml.jackson.core:jackson-core:2.6.7"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.6.7.5"
-    implementation "org.embulk:embulk-util-config:0.3.4"
-    implementation "org.embulk:embulk-util-file:0.1.5"
-    implementation "org.embulk:embulk-util-json:0.3.0"
-    implementation "org.embulk:embulk-util-timestamp:0.2.2"
+    implementation libs.embulk.util.config
+    implementation libs.validation
+    implementation libs.bundles.jackson
 
-    testImplementation "junit:junit:4.13.2"
-    testImplementation "org.embulk:embulk-spi:0.11"
-    testImplementation "org.embulk:embulk-core:0.11.0"
-    testImplementation "org.embulk:embulk-deps:0.11.0"
-    testImplementation "org.embulk:embulk-junit4:0.11.0"
+    implementation libs.embulk.util.file
+    implementation libs.embulk.util.json
+    implementation libs.embulk.util.timestamp
+
+    testImplementation libs.junit4
+    testImplementation libs.embulk.spi
+    testImplementation libs.embulk.core
+    testImplementation libs.embulk.deps
+    testImplementation libs.embulk.junit4
 }
 
 embulkPlugin {
@@ -73,6 +73,19 @@ sourcesJar {
 javadocJar {
     metaInf {
         from rootProject.file("LICENSE")
+    }
+}
+
+// A safer and strict alternative to: "dependencies" (and "dependencies --write-locks")
+//
+// This task fails explicitly when the specified dependency is not available.
+// In contrast, "dependencies (--write-locks)" does not fail even when a part the dependencies are unavailable.
+//
+// https://docs.gradle.org/8.7/userguide/dependency_locking.html#generating_and_updating_dependency_locks
+task checkDependencies {
+    notCompatibleWithConfigurationCache("The task \"checkDependencies\" filters configurations at execution time.")
+    doLast {
+        configurations.findAll { it.canBeResolved }.each { it.resolve() }
     }
 }
 
