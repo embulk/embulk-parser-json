@@ -77,6 +77,7 @@ public class TestJsonParserPlugin {
         assertEquals(JsonParserPlugin.InvalidEscapeStringPolicy.PASSTHROUGH, task.getInvalidEscapeStringPolicy());
     }
 
+    @SuppressWarnings("checkstyle:Indentation")
     @Test
     public void readNormalJson() throws Exception {
         transaction(config, fileInput(
@@ -227,6 +228,7 @@ public class TestJsonParserPlugin {
         assertEquals(JsonString.of("b"), object.get("a"));
     }
 
+    @SuppressWarnings("checkstyle:Indentation")
     @Test
     public void checkInvalidEscapeStringFunction() {
         //PASSTHROUGH
