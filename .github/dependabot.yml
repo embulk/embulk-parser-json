@@ -13,3 +13,7 @@ updates:
     allow:
       - dependency-name: "org.embulk.embulk-plugins"
       - dependency-name: "org.embulk:embulk-spi"
+      - dependency-name: "org.embulk:embulk-util-config"
+      - dependency-name: "org.embulk:embulk-util-file"
+      - dependency-name: "org.embulk:embulk-util-json"
+      - dependency-name: "org.embulk:embulk-util-timestamp"
